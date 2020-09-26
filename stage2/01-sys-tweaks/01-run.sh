@@ -11,6 +11,9 @@ install -m 644 files/console-setup   	"${ROOTFS_DIR}/etc/default/"
 
 install -m 755 files/rc.local		"${ROOTFS_DIR}/etc/"
 
+install -m 644 files/.gitconfig		"${ROOTFS_DIR}/home/${FIRST_USER_NAME}/"
+chown 1000:1000 "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/.gitconfig"
+
 if [ -n "${PUBKEY_SSH_FIRST_USER}" ]; then
 	install -v -m 0700 -o 1000 -g 1000 -d "${ROOTFS_DIR}"/home/"${FIRST_USER_NAME}"/.ssh
 	echo "${PUBKEY_SSH_FIRST_USER}" >"${ROOTFS_DIR}"/home/"${FIRST_USER_NAME}"/.ssh/authorized_keys
@@ -52,7 +55,7 @@ on_chroot <<EOF
 for GRP in input spi i2c gpio; do
 	groupadd -f -r "\$GRP"
 done
-for GRP in adm dialout cdrom audio users sudo video games plugdev input gpio spi i2c netdev; do
+for GRP in adm dialout cdrom audio users sudo video games plugdev input gpio spi i2c netdev docker; do
   adduser $FIRST_USER_NAME \$GRP
 done
 EOF
@@ -66,3 +69,12 @@ usermod --pass='*' root
 EOF
 
 rm -f "${ROOTFS_DIR}/etc/ssh/"ssh_host_*_key*
+
+mkdir -p "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/.ssh/"
+ssh-keygen -q -t rsa -N '' -f "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/.ssh/id_rsa" <<<y
+chown -R 1000:1000 "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/.ssh/"
+sed -i "s/root@/${FIRST_USER_NAME}@/g" "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/.ssh/id_rsa.pub"
+
+on_chroot update-command-not-found
+echo "fs.inotify.max_user_watches=524288" >> "${ROOTFS_DIR}/etc/sysctl.conf"
+on_chroot sysctl -p
