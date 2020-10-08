@@ -86,11 +86,11 @@ run_stage(){
 	unmount "${WORK_DIR}/${STAGE}"
 	STAGE_WORK_DIR="${WORK_DIR}/${STAGE}"
 	ROOTFS_DIR="${STAGE_WORK_DIR}"/rootfs
-	if [ ! -f SKIP_IMAGES ]; then
-		if [ -f "${STAGE_DIR}/EXPORT_IMAGE" ]; then
-			EXPORT_DIRS="${EXPORT_DIRS} ${STAGE_DIR}"
-		fi
-	fi
+#	if [ ! -f SKIP_IMAGES ]; then
+#		if [ -f "${STAGE_DIR}/EXPORT_IMAGE" ]; then
+#			EXPORT_DIRS="${EXPORT_DIRS} ${STAGE_DIR}"
+#		fi
+#	fi
 	if [ ! -f SKIP ]; then
 		if [ "${CLEAN}" = "1" ]; then
 			if [ -d "${ROOTFS_DIR}" ]; then
@@ -108,6 +108,11 @@ run_stage(){
 				run_sub_stage
 			fi
 		done
+		if [ -x postrun.sh ]; then
+			log "Begin ${STAGE_DIR}/postrun.sh"
+			./postrun.sh
+			log "End ${STAGE_DIR}/postrun.sh"
+		fi
 	fi
 	unmount "${WORK_DIR}/${STAGE}"
 	PREV_STAGE="${STAGE}"
@@ -206,6 +211,10 @@ export QUILT_NO_DIFF_INDEX=1
 export QUILT_NO_DIFF_TIMESTAMPS=1
 export QUILT_REFRESH_ARGS="-p ab"
 
+export REPOSITORY_URL="${REPOSITORY_URL:-http://deb.debian.org/debian/}"
+export ARCH="${ARCH:-armhf}"
+export EXPORT_DIRS="${EXPORT_DIRS:-${BASE_DIR}/stage2 ${BASE_DIR}/stage5}"
+
 # shellcheck source=scripts/common
 source "${SCRIPT_DIR}/common"
 # shellcheck source=scripts/dependencies_check
@@ -248,15 +257,17 @@ CLEAN=1
 for EXPORT_DIR in ${EXPORT_DIRS}; do
 	STAGE_DIR=${BASE_DIR}/export-image
 	# shellcheck source=/dev/null
-	source "${EXPORT_DIR}/EXPORT_IMAGE"
-	EXPORT_ROOTFS_DIR=${WORK_DIR}/$(basename "${EXPORT_DIR}")/rootfs
-	run_stage
-	if [ "${USE_QEMU}" != "1" ]; then
-		if [ -e "${EXPORT_DIR}/EXPORT_NOOBS" ]; then
-			# shellcheck source=/dev/null
-			source "${EXPORT_DIR}/EXPORT_NOOBS"
-			STAGE_DIR="${BASE_DIR}/export-noobs"
-			run_stage
+	if [[ -e "${EXPORT_DIR}/EXPORT_IMAGE" ]]; then
+		source "${EXPORT_DIR}/EXPORT_IMAGE"
+		EXPORT_ROOTFS_DIR=${WORK_DIR}/$(basename "${EXPORT_DIR}")/rootfs
+		run_stage
+		if [ "${USE_QEMU}" != "1" ]; then
+			if [ -e "${EXPORT_DIR}/EXPORT_NOOBS" ]; then
+				# shellcheck source=/dev/null
+				source "${EXPORT_DIR}/EXPORT_NOOBS"
+				STAGE_DIR="${BASE_DIR}/export-noobs"
+				run_stage
+			fi
 		fi
 	fi
 done
