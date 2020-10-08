@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 log (){
 	date +"[%T] $*" | tee -a "${LOG_FILE}"
 }
@@ -29,6 +31,7 @@ bootstrap(){
 export -f bootstrap
 
 copy_previous(){
+	log "PREV_ROOTFS - ${PREV_ROOTFS_DIR}"
 	if [ ! -d "${PREV_ROOTFS_DIR}" ]; then
 		echo "Previous stage rootfs not found"
 		false
