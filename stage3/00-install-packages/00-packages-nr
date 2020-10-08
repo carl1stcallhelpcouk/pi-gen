@@ -1,6 +1,0 @@
-xserver-xorg xinit
-mousepad
-task-mate-desktop
-zenity xdg-utils
-gvfs-backends gvfs-fuse
-lightdm
