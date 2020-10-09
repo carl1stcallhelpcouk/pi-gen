@@ -131,7 +131,9 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 export BASE_DIR
+export IMG_DATE="${IMG_DATE:-"$(date +%Y-%m-%d)"}"
 
 if [ -f config ]; then
 	# shellcheck disable=SC1091
