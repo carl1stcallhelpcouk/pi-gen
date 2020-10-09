@@ -2,8 +2,9 @@
 
 log (){
 #	date +"[%T] $*" | tee -a "${LOG_FILE}"
-	date +"[%T] ${*}" | tee -a "${LOG_FILE}"
+	date +"[%T] ${STAGE_DIR}${*}" | tee -a "${LOG_FILE}"
 }
+
 export -f log
 
 debug_log(){

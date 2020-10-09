@@ -10,6 +10,8 @@ Tool used to create Raspberry Pi OS images. (Previously known as Raspbian).
 1. Move building of images to imitiately after stage has been built. (DONE.)
 1. Fork building of imaged to background. (TESTING.)
 1. Resolve locale not set messages in stage0.
+1. Make a config directory with symbolic links to package files.
+1. 
 1. New config options :-
    1. Make desktop environment configurable (ie. mate, kde, default, etc, etc.)
    1. Make arch configurable (ie. arm64, x86, etc, etc)
@@ -20,7 +22,7 @@ Tool used to create Raspberry Pi OS images. (Previously known as Raspbian).
 
 1. Add show_progress function for long running tasks (WIP.)
 1. Move more otions to `config`. (DONE/TESTING.)
-
+1. Write a `pi-gen-reconfigue.sh` to change hostname, UUIDs, etc, etc without rebuild.
  
 
 ## Dependencies
