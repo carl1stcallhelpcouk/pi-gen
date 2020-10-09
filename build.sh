@@ -220,6 +220,7 @@ export REPOSITORY_URL="${REPOSITORY_URL:-http://deb.debian.org/debian/}"
 export ARCH="${ARCH:-armhf}"
 export EXPORT_DIRS="${EXPORT_DIRS:-${BASE_DIR}/stage2 ${BASE_DIR}/stage5}"
 export DEBUG_LEVEL=${DEBUG_LEVEL:-5}
+export EXPORT_PIDS
 
 
 # shellcheck source=scripts/common.sh
@@ -269,13 +270,15 @@ for WSTAGE_DIR in "${STAGE_LIST[@]}"; do
 			source "${EXPORT_DIR}/EXPORT_IMAGE"
 			EXPORT_ROOTFS_DIR=${WORK_DIR}/$(basename "${EXPORT_DIR}")/rootfs
 			TMP_PREV_ROOTFS_DIR="${PREV_ROOTFS_DIR}"
-			run_stage
+			run_stage &
+			EXPORT_PIDS+=("${!}")
 			if [ "${USE_QEMU}" != "1" ]; then
 				if [ -e "${EXPORT_DIR}/EXPORT_NOOBS" ]; then
 					# shellcheck source=/dev/null
 					source "${EXPORT_DIR}/EXPORT_NOOBS"
 					STAGE_DIR="${BASE_DIR}/export-noobs"
-					run_stage
+					run_stage &
+					EXPORT_PIDS+=("${!}")
 				fi
 			fi
 			PREV_ROOTFS_DIR="${TMP_PREV_ROOTFS_DIR}"
@@ -307,6 +310,14 @@ done
 #		fi
 #	fi
 #done
+
+debug_log 3 "Waiting for jobs ${EXPORT_PIDS[@]}"
+
+for PID in ${EXPORT_PIDS}; do
+	wait ${PID}
+	echo Job ${PID} exited with status $?
+done
+read -n 1 -s -r -p "Press any key to continue..."
 
 if [ -x ${BASE_DIR}/postrun.sh ]; then
 	log "Begin postrun.sh"
