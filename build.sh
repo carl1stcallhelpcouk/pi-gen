@@ -270,8 +270,12 @@ for WSTAGE_DIR in "${STAGE_LIST[@]}"; do
 			source "${EXPORT_DIR}/EXPORT_IMAGE"
 			EXPORT_ROOTFS_DIR=${WORK_DIR}/$(basename "${EXPORT_DIR}")/rootfs
 			TMP_PREV_ROOTFS_DIR="${PREV_ROOTFS_DIR}"
-			run_stage &
-			EXPORT_PIDS+=("${!}")
+			OUT="$(mktemp)"
+			run_stage >"${OUT}" 2>&1 &
+			PID="${!}"
+			debug_log 3 "Spawned job ${PID} to ${OUT}"
+			EXPORT_PIDS+=("${PID}")
+			EXPORT_OUT+=("${OUT}")
 			if [ "${USE_QEMU}" != "1" ]; then
 				if [ -e "${EXPORT_DIR}/EXPORT_NOOBS" ]; then
 					# shellcheck source=/dev/null
@@ -311,13 +315,17 @@ done
 #	fi
 #done
 
-debug_log 3 "Waiting for jobs ${EXPORT_PIDS[@]}"
-
-for PID in ${EXPORT_PIDS}; do
+debug_log 3 "Waiting for jobs ${EXPORT_PIDS[*]} ${EXPORT_OUT[*]}"
+COUNT=0
+cp /dev/null mytmp.log
+for PID in ${EXPORT_PIDS[*]}; do
+	debug_log 3 "Waiting for job ${PID}"
 	wait ${PID}
-	echo Job ${PID} exited with status $?
+	debug_log 3 "Job COUNT=${COUNT} PID=${PID} exited with status ${?}. Output Follows from ${EXPORT_OUT[${COUNT}]} :-"
+	cat ${EXPORT_OUT[${COUNT}]} >> mytmp.log
+	rm ${EXPORT_OUT[${COUNT}]}
+	COUNT+=1
 done
-read -n 1 -s -r -p "Press any key to continue..."
 
 if [ -x ${BASE_DIR}/postrun.sh ]; then
 	log "Begin postrun.sh"
@@ -325,5 +333,5 @@ if [ -x ${BASE_DIR}/postrun.sh ]; then
 	./postrun.sh
 	log "End postrun.sh"
 fi
-END_TIME=$ ( date +"[%T] )
+END_TIME=$( date +"[%T]" )
 log "End ${BASE_DIR}. Started at ${START_TIME}. ended at ${END_TIME}."
