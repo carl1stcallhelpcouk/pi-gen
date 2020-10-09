@@ -318,17 +318,20 @@ done
 debug_log 3 "Waiting for jobs ${EXPORT_PIDS[*]} ${EXPORT_OUT[*]}"
 
 export EXPORT_COUNT=0
+export EXPORTS="${#EXPORT_OUT[*]}"
 cp /dev/null mytmp.log
-for PID in ${EXPORT_PIDS[*]}; do
-	debug_log 3 "Waiting for job. EXPORT_COUNT=${EXPORT_COUNT}/${#EXPORT_OUT[@]} pid=${PID}"
-	wait ${PID}
-	debug_log 3 "Job EXPORT_COUNT=${EXPORT_COUNT} PID=${PID} exited with status ${?}. Output Follows from ${EXPORT_OUT[${EXPORT_COUNT}]} :-"
+for PID in "${EXPORT_PIDS[@]}"; do
+	debug_log 3 "Waiting for job. EXPORT_COUNT=${EXPORT_COUNT}/${EXPORTS} pid=${PID}"
+	wait ${PID} || true
+	debug_log 3 "Job EXPORT_COUNT=${EXPORT_COUNT} PID=${PID} exited with status ${?}. Output will follow from ${EXPORT_OUT[${EXPORT_COUNT}]} :-"
 	cat "${EXPORT_OUT[${EXPORT_COUNT}]}" >> mytmp.log
 	rm -v "${EXPORT_OUT[${EXPORT_COUNT}]}"
-	EXPORT_COUNT+=1
+	((EXPORT_COUNT+=1))
+	debug_log 3 "Next export is ${EXPORT_COUNT}"
 done
-EXPORT_OUTPUT=$(cat mytmp.log)
-debug_log 3 "${EXPORT_OUTPUT}"
+#EXPORT_OUTPUT=$(cat mytmp.log)
+#debug_log 3 "${EXPORT_OUTPUT}"
+cat mytmp.log
 
 if [ -x ${BASE_DIR}/postrun.sh ]; then
 	log "Begin postrun.sh"
