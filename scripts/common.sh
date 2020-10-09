@@ -9,11 +9,22 @@ debug_log(){
 	set -e
 	local LOG_LEVEL=${1:-0}
 	local MSG="${*:-debugging}"
-#	echo ¨LOG_LEVEL = ${LOG_LEVEL} DEBUG_LEVEL = ${DEBUG_LEVEL}¨
+#	echo "LOG_LEVEL = ${LOG_LEVEL} DEBUG_LEVEL = ${DEBUG_LEVEL}"
 	if [ ${LOG_LEVEL} -le ${DEBUG_LEVEL} ]; then
 		log "*DEBUG* ${MSG}"
 	fi
 }
+export -f debug_log
+
+show_progress(){
+  echo -n "$0: Please wait..."
+  while true
+  do
+    echo -n "."
+    sleep 5
+  done
+}
+export -f show_progress
 
 bootstrap(){
 	local BOOTSTRAP_CMD=debootstrap
@@ -46,8 +57,12 @@ copy_previous(){
 		echo "Previous stage rootfs not found"
 		false
 	fi
+#	show_progress &
+#	PROGRESS_PID=$!
 	mkdir -p "${ROOTFS_DIR}"
-	rsync -aHAXx --exclude var/cache/apt/archives "${PREV_ROOTFS_DIR}/" "${ROOTFS_DIR}/"
+	rsync -aHAXx --exclude var/cache/apt/archives --info=progress2 "${PREV_ROOTFS_DIR}/" "${ROOTFS_DIR}/"
+#	kill ${PROGRESS_PID} >/dev/null 2>&1
+#	echo -n "...done."
 }
 export -f copy_previous
 
