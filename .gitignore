@@ -6,3 +6,4 @@ apt-cacher-ng/
 pi-gen.out
 SKIP
 stage4/03-bookshelf/files/*
+mytmp.log

@@ -220,6 +220,7 @@ export REPOSITORY_URL="${REPOSITORY_URL:-http://deb.debian.org/debian/}"
 export ARCH="${ARCH:-armhf}"
 export EXPORT_DIRS="${EXPORT_DIRS:-${BASE_DIR}/stage2 ${BASE_DIR}/stage5}"
 export DEBUG_LEVEL=${DEBUG_LEVEL:-5}
+export EXPORT_PIDS
 
 
 # shellcheck source=scripts/common.sh
@@ -254,13 +255,13 @@ mkdir -p "${WORK_DIR}"
 log "Begin ${BASE_DIR}"
 
 STAGE_LIST=${STAGE_LIST:-${BASE_DIR}/stage*}
-debug_log 6 "STAGE_LIST = ${STAGE_LIST[*]}"
-debug_log 6 "EXPORT_DIRS = ${EXPORT_DIRS[*]}"
+debug_log 6 "STAGE_LIST = ${STAGE_LIST[@]}"
+debug_log 6 "EXPORT_DIRS = ${EXPORT_DIRS[@]}"
 
 for WSTAGE_DIR in "${STAGE_LIST[@]}"; do
 	STAGE_DIR=$(realpath "${WSTAGE_DIR}")
 	run_stage
-	if [[ " ${EXPORT_DIRS[*]} " =~ ${WSTAGE_DIR} ]]; then
+	if [[ " ${EXPORT_DIRS[@]} " =~ ${WSTAGE_DIR} ]]; then
 		EXPORT_DIR="${STAGE_DIR}"
 		if [[ -e "${EXPORT_DIR}/EXPORT_IMAGE" ]]; then
 			debug_log 2 "Begin export ${EXPORT_DIR}"
@@ -269,13 +270,19 @@ for WSTAGE_DIR in "${STAGE_LIST[@]}"; do
 			source "${EXPORT_DIR}/EXPORT_IMAGE"
 			EXPORT_ROOTFS_DIR=${WORK_DIR}/$(basename "${EXPORT_DIR}")/rootfs
 			TMP_PREV_ROOTFS_DIR="${PREV_ROOTFS_DIR}"
-			run_stage
+			OUT="$(mktemp)"
+			run_stage >"${OUT}" 2>&1 &
+			PID="${!}"
+			debug_log 3 "Spawned job ${PID} to ${OUT}"
+			EXPORT_PIDS+=("${PID}")
+			EXPORT_OUT+=("${OUT}")
 			if [ "${USE_QEMU}" != "1" ]; then
 				if [ -e "${EXPORT_DIR}/EXPORT_NOOBS" ]; then
 					# shellcheck source=/dev/null
 					source "${EXPORT_DIR}/EXPORT_NOOBS"
 					STAGE_DIR="${BASE_DIR}/export-noobs"
-					run_stage
+					run_stage &
+					EXPORT_PIDS+=("${!}")
 				fi
 			fi
 			PREV_ROOTFS_DIR="${TMP_PREV_ROOTFS_DIR}"
@@ -308,11 +315,29 @@ done
 #	fi
 #done
 
+debug_log 3 "Waiting for jobs ${EXPORT_PIDS[@]} ${EXPORT_OUT[@]}"
+
+export EXPORT_COUNT=0
+export EXPORTS="${#EXPORT_OUT[@]}"
+cp /dev/null mytmp.log
+for PID in "${EXPORT_PIDS[@]}"; do
+	debug_log 3 "Waiting for job. EXPORT_COUNT=${EXPORT_COUNT}/${EXPORTS} pid=${PID}"
+	wait ${PID} || true
+	debug_log 3 "Job EXPORT_COUNT=${EXPORT_COUNT} PID=${PID} exited with status ${?}. Output will follow from ${EXPORT_OUT[${EXPORT_COUNT}]} :-"
+	cat "${EXPORT_OUT[${EXPORT_COUNT}]}" >> mytmp.log
+	rm -v "${EXPORT_OUT[${EXPORT_COUNT}]}"
+	((EXPORT_COUNT+=1))
+	debug_log 3 "Next export is ${EXPORT_COUNT}"
+done
+#EXPORT_OUTPUT=$(cat mytmp.log)
+#debug_log 3 "${EXPORT_OUTPUT}"
+cat mytmp.log
+
 if [ -x ${BASE_DIR}/postrun.sh ]; then
 	log "Begin postrun.sh"
 	cd "${BASE_DIR}"
 	./postrun.sh
 	log "End postrun.sh"
 fi
-END_TIME=$ ( date +"[%T] )
+END_TIME=$( date +"[%T]" )
 log "End ${BASE_DIR}. Started at ${START_TIME}. ended at ${END_TIME}."

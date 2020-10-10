@@ -1,8 +1,10 @@
 #!/bin/bash -e
 
 log (){
-	date +"[%T] (${STAGE:-init}) $*" | tee -a "${LOG_FILE}"
+#	date +"[%T] $*" | tee -a "${LOG_FILE}"
+	date +"[%T] ${STAGE} ${*}" | tee -a "${LOG_FILE}"
 }
+
 export -f log
 
 debug_log(){
