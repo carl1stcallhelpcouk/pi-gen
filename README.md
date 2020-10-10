@@ -16,14 +16,18 @@ Tool used to create Raspberry Pi OS images. (Previously known as Raspbian).
    1. Make desktop environment configurable (ie. mate, kde, default, etc, etc.)
    1. Make arch configurable (ie. arm64, x86, etc, etc)
    1. Make OS configurable (ie. ubuntu, arch, debian, etc, etc.)
-   1. Enable SBCs other than PIs
+   1. Enable SBCs other than PIs. (rename to sbc-gen??????)
    1. Add log verbosity option. Maybe a ```debug_log(DEBUG_LEVEL, MESSAGE)``` function (WIP)
    1. Make source repoitories configurable. (Think its been done on github https://github.com/RPi-Distro/pi-gen/pull/445.)
 
 1. Add show_progress function for long running tasks (WIP.)
 1. Move more otions to `config`. (DONE/TESTING.)
 1. Write a `pi-gen-reconfigue.sh` to change hostname, UUIDs, etc, etc without rebuild.
- 
+1. Standardise log messages
+1. Write some documentation.
+1. Make a CLI.
+1. Make a GUI.
+
 
 ## Dependencies
 
