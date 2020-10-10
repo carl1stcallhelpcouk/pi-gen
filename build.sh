@@ -255,13 +255,13 @@ mkdir -p "${WORK_DIR}"
 log "Begin ${BASE_DIR}"
 
 STAGE_LIST=${STAGE_LIST:-${BASE_DIR}/stage*}
-debug_log 6 "STAGE_LIST = ${STAGE_LIST[*]}"
-debug_log 6 "EXPORT_DIRS = ${EXPORT_DIRS[*]}"
+debug_log 6 "STAGE_LIST = ${STAGE_LIST[@]}"
+debug_log 6 "EXPORT_DIRS = ${EXPORT_DIRS[@]}"
 
 for WSTAGE_DIR in "${STAGE_LIST[@]}"; do
 	STAGE_DIR=$(realpath "${WSTAGE_DIR}")
 	run_stage
-	if [[ " ${EXPORT_DIRS[*]} " =~ ${WSTAGE_DIR} ]]; then
+	if [[ " ${EXPORT_DIRS[@]} " =~ ${WSTAGE_DIR} ]]; then
 		EXPORT_DIR="${STAGE_DIR}"
 		if [[ -e "${EXPORT_DIR}/EXPORT_IMAGE" ]]; then
 			debug_log 2 "Begin export ${EXPORT_DIR}"
@@ -315,10 +315,10 @@ done
 #	fi
 #done
 
-debug_log 3 "Waiting for jobs ${EXPORT_PIDS[*]} ${EXPORT_OUT[*]}"
+debug_log 3 "Waiting for jobs ${EXPORT_PIDS[@]} ${EXPORT_OUT[@]}"
 
 export EXPORT_COUNT=0
-export EXPORTS="${#EXPORT_OUT[*]}"
+export EXPORTS="${#EXPORT_OUT[@]}"
 cp /dev/null mytmp.log
 for PID in "${EXPORT_PIDS[@]}"; do
 	debug_log 3 "Waiting for job. EXPORT_COUNT=${EXPORT_COUNT}/${EXPORTS} pid=${PID}"
