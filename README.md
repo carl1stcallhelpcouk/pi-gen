@@ -11,7 +11,6 @@ Tool used to create Raspberry Pi OS images. (Previously known as Raspbian).
 1. Fork building of imaged to background. (TESTING.)
 1. Resolve locale not set messages in stage0.
 1. Make a config directory with symbolic links to package files.
-1. 
 1. New config options :-
    1. Make desktop environment configurable (ie. mate, kde, default, etc, etc.)
    1. Make arch configurable (ie. arm64, x86, etc, etc)
@@ -27,7 +26,18 @@ Tool used to create Raspberry Pi OS images. (Previously known as Raspbian).
 1. Write some documentation.
 1. Make a CLI.
 1. Make a GUI.
-
+1. Document code.
+1. Create a config.d type folder with symlinks to packages files
+1. Maybe an apache type pig2enable 'feature' to symlink apropiate files that install / enable features?
+1. Split package files into logical groups.  Maybe append short description to filename, ie. 00-packages_mate, 00-packages_kde, 00-packages_vscode, etc. etc.
+1. TARGET_HOSTNAME (or perhaps add a TARGET_NAME config option) specific directories.  ie stage3_rpi1, stage3_rpi2, etc. etc.
+1. Home directory github repo with .config, .bashrc, etc. etc. that we can clone during build or on 1st login.
+1. Remove default password? Leave blank + expire if it will work.
+1. Integrate with apt-cacher or simular to cache apt repository.
+1. Allow overide of `config.txt` options.  Easy - Set all defaults in `config`, then sed them into `config.txt`.  Harder but more flexable - for each line in `config.txt`, check for correspnding `${CONFIGTXT_config option from config.txt}` and only replace ones set/differ. eg. `if [ -z CONFIGTXT_disable_overscan ] then sed config.txt`
+1. add `ufw` package to stage3?
+1. add `ncat` package to stage3?
+1. Allow addition of aditional partitions on ssd/hhd/sd.
 
 ## Dependencies
 
