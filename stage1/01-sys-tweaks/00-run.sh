@@ -13,4 +13,4 @@ echo "root:root" | chpasswd
 passwd --expire ${FIRST_USER_NAME}
 EOF
 
-install -m 644 files/.bash_aliases "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/.bash_aliases"
+install -m 644 --owner=1000 --group=1000 files/.bash_aliases "${ROOTFS_DIR}/home/${FIRST_USER_NAME}/.bash_aliases"
