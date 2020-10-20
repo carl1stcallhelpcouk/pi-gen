@@ -5,7 +5,8 @@ NOOBS_DIR="${STAGE_WORK_DIR}/${IMG_DATE}-${IMG_NAME}${IMG_SUFFIX}"
 unmount_image "${IMG_FILE}"
 
 mkdir -p "${STAGE_WORK_DIR}"
-cp "${WORK_DIR}/export-image/${IMG_FILENAME}${IMG_SUFFIX}.img" "${STAGE_WORK_DIR}/"
+debug_log 8 "Copying '${WORK_DIR}/export-image/${IMG_FILENAME}${IMG_SUFFIX}.img' > '${STAGE_WORK_DIR}/'"
+cp -v "${WORK_DIR}/export-image/${IMG_FILENAME}${IMG_SUFFIX}.img" "${STAGE_WORK_DIR}/"
 
 rm -rf "${NOOBS_DIR}"
 

@@ -22,8 +22,9 @@ EOF
 			log "Begin ${SUB_STAGE_DIR}/${i}-packages-nr"
 			PACKAGES="$(sed -f "${SCRIPT_DIR}/remove-comments.sed" < "${i}-packages-nr")"
 			if [ -n "$PACKAGES" ]; then
+				debug_log 8 "Installing packages (no recommends) '$PACKAGES'"
 				on_chroot << EOF
-apt-get -o APT::Acquire::Retries=3 install --no-install-recommends -y $PACKAGES
+DEBIAN_FRONTEND=noninteractive apt-get -o APT::Acquire::Retries=3 install --no-install-recommends -y $PACKAGES
 EOF
 			fi
 			log "End ${SUB_STAGE_DIR}/${i}-packages-nr"
@@ -32,8 +33,9 @@ EOF
 			log "Begin ${SUB_STAGE_DIR}/${i}-packages"
 			PACKAGES="$(sed -f "${SCRIPT_DIR}/remove-comments.sed" < "${i}-packages")"
 			if [ -n "$PACKAGES" ]; then
+				debug_log 8 "Installing packages '$PACKAGES'"
 				on_chroot << EOF
-apt-get -o APT::Acquire::Retries=3 install -y $PACKAGES
+DEBIAN_FRONTEND=noninteractive apt-get -o APT::Acquire::Retries=3 install -y $PACKAGES
 EOF
 			fi
 			log "End ${SUB_STAGE_DIR}/${i}-packages"
@@ -220,6 +222,7 @@ export REPOSITORY_URL="${REPOSITORY_URL:-http://deb.debian.org/debian/}"
 export ARCH="${ARCH:-armhf}"
 export EXPORT_DIRS="${EXPORT_DIRS:-${BASE_DIR}/stage2 ${BASE_DIR}/stage5}"
 export DEBUG_LEVEL=${DEBUG_LEVEL:-5}
+export DEBUG_LOG=${DEBUG_LOG:-debug.log}
 export EXPORT_PIDS
 
 
@@ -258,7 +261,7 @@ STAGE_LIST=${STAGE_LIST:-${BASE_DIR}/stage*}
 debug_log 6 "STAGE_LIST = ${STAGE_LIST[@]}"
 debug_log 6 "EXPORT_DIRS = ${EXPORT_DIRS[@]}"
 
-for WSTAGE_DIR in "${STAGE_LIST[@]}"; do
+for WSTAGE_DIR in ${STAGE_LIST[@]}; do
 	STAGE_DIR=$(realpath "${WSTAGE_DIR}")
 	run_stage
 	if [[ " ${EXPORT_DIRS[@]} " =~ ${WSTAGE_DIR} ]]; then
