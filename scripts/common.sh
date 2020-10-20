@@ -2,13 +2,13 @@
 
 log (){
 #	date +"[%T] $*" | tee -a "${LOG_FILE}"
-	date +"[%T] ${STAGE} ${*}" | tee -a "${LOG_FILE}"
+#	date +"[%T] [${STAGE}] - ${*}" | tee -a "${LOG_FILE}"
+	date +"[%T] [${STAGE}]/[${SUB_STAGE}] - ${*}" | tee -a "${LOG_FILE}"
 }
 
 export -f log
 
 debug_log(){
-	set -e
 #	set -x
 	local LOG_LEVEL=${1:-0}
 	local MSG="${*:-debugging}"

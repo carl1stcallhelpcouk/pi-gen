@@ -6,6 +6,7 @@ export START_TIME=$( date +"[%T]" )
 run_sub_stage()
 {
 	log "Begin ${SUB_STAGE_DIR}"
+	SUB_STAGE="$(basename "${SUB_STAGE_DIR}")"
 	pushd "${SUB_STAGE_DIR}" > /dev/null
 	for i in {00..99}; do
 		if [ -f "${i}-debconf" ]; then
@@ -81,12 +82,13 @@ EOF
 	done
 	popd > /dev/null
 	log "End ${SUB_STAGE_DIR}"
+	SUB_STAGE="(none)"
 }
 
 
 run_stage(){
-	log "Begin ${STAGE_DIR}"
 	STAGE="$(basename "${STAGE_DIR}")"
+	log "Begin ${STAGE_DIR}"
 	pushd "${STAGE_DIR}" > /dev/null
 	unmount "${WORK_DIR}/${STAGE}"
 	STAGE_WORK_DIR="${WORK_DIR}/${STAGE}"
@@ -125,6 +127,7 @@ run_stage(){
 	PREV_ROOTFS_DIR="${ROOTFS_DIR}"
 	popd > /dev/null
 	log "End ${STAGE_DIR}"
+	STAGE="(INIT)"
 }
 
 if [ "$(id -u)" != "0" ]; then
@@ -200,7 +203,8 @@ export CLEAN
 export IMG_NAME
 export APT_PROXY
 
-export STAGE="INIT"
+export STAGE="(INIT)"
+export SUB_STAGE="(n/a)"
 export STAGE_DIR
 export STAGE_WORK_DIR
 export PREV_STAGE
@@ -325,16 +329,19 @@ export EXPORTS="${#EXPORT_OUT[@]}"
 cp /dev/null mytmp.log
 for PID in "${EXPORT_PIDS[@]}"; do
 	debug_log 3 "Waiting for job. EXPORT_COUNT=${EXPORT_COUNT}/${EXPORTS} pid=${PID}"
+	tail -f ${EXPORT_OUT[${EXPORT_COUNT}]} &
+	TAIL_PID=${!}
 	wait ${PID} || true
 	debug_log 3 "Job EXPORT_COUNT=${EXPORT_COUNT} PID=${PID} exited with status ${?}. Output will follow from ${EXPORT_OUT[${EXPORT_COUNT}]} :-"
-	cat "${EXPORT_OUT[${EXPORT_COUNT}]}" >> mytmp.log
+#	cat "${EXPORT_OUT[${EXPORT_COUNT}]}" >> mytmp.log
+	kill ${TAIL_PID}
 	rm -v "${EXPORT_OUT[${EXPORT_COUNT}]}"
 	((EXPORT_COUNT+=1))
 	debug_log 3 "Next export is ${EXPORT_COUNT}"
 done
 #EXPORT_OUTPUT=$(cat mytmp.log)
 #debug_log 3 "${EXPORT_OUTPUT}"
-cat mytmp.log
+#cat mytmp.log
 
 if [ -x ${BASE_DIR}/postrun.sh ]; then
 	log "Begin postrun.sh"
