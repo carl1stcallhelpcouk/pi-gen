@@ -8,7 +8,7 @@ Tool used to create Raspberry Pi OS images. (Previously known as Raspbian).
 1. Update `README.md`. (WIP.)
 1. Impliment `postrun.sh`. (DONE.)
 1. Move building of images to imitiately after stage has been built. (DONE.)
-1. Fork building of imaged to background. (TESTING.)
+1. Fork building of imaged to background. (DONE.)
 1. Resolve locale not set messages in stage0.
 1. Make a config directory with symbolic links to package files.
 1. New config options :-
@@ -38,6 +38,7 @@ Tool used to create Raspberry Pi OS images. (Previously known as Raspbian).
 1. add `ufw` package to stage3?
 1. add `ncat` package to stage3?
 1. Allow addition of aditional partitions on ssd/hhd/sd.
+1. Enable background running.  This will involve the merging of log & debug_log functions to give granular logging and extend to full logging / silent STDOUT.
 
 ## Dependencies
 
