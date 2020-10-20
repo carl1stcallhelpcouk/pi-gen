@@ -7,7 +7,7 @@ raspberrypi-artwork
 policykit-1
 gvfs
 rfkill
-chromium rpi-chromium-mods
+chromium-browser rpi-chromium-mods
 gldriver-test
 fonts-droid-fallback
 fonts-liberation2
