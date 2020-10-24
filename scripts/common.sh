@@ -52,7 +52,7 @@ bootstrap(){
 	capsh --drop=cap_setfcap -- -c "'${BOOTSTRAP_CMD}' $BOOTSTRAP_STR" || true
 
 	if [ -d "$2/debootstrap" ]; then
-		rmdir "$2/debootstrap"
+		rm -r "$2/debootstrap"
 	fi
 }
 export -f bootstrap
