@@ -205,6 +205,7 @@ export APT_PROXY
 
 export STAGE="(INIT)"
 export SUB_STAGE="(n/a)"
+export SUB_STAGE_DIR
 export STAGE_DIR
 export STAGE_WORK_DIR
 export PREV_STAGE
