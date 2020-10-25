@@ -44,6 +44,11 @@ Tool used to create Raspberry Pi OS images. (Previously known as Raspbian).
 1. add `ncat` package to stage3?
 1. Allow addition of aditional partitions on ssd/hhd/sd.
 1. Enable background running.  This will involve the merging of log & debug_log functions to give granular logging and extend to full logging / silent STDOUT.
+1. Make repeateable builds by :- 
+   1. debootstrap --download-only and apt-get --download-only to local repository or
+   1. debootstrap --unpack-tarball=T     acquire .debs from a tarball instead of http
+          "       --make-tarball=T       download .debs and create a gzipped tarball
+1. Fast mode by using mv or hardlink instead of cp / rsync in `prerun.sh`s.
 
 ## Dependencies
 
