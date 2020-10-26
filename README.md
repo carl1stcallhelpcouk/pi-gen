@@ -49,6 +49,7 @@ Tool used to create Raspberry Pi OS images. (Previously known as Raspbian).
    1. debootstrap --unpack-tarball=T     acquire .debs from a tarball instead of http
           "       --make-tarball=T       download .debs and create a gzipped tarball
 1. Fast mode by using mv or hardlink instead of cp / rsync in `prerun.sh`s.
+1. Add stage7 for hostname specific tasks.
 
 ## Dependencies
 
