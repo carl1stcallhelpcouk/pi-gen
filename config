@@ -20,9 +20,9 @@ FIRST_USER_PASS="letmein123"
 FIRST_USER_PASS_EXPIRE=1
 
 RELEASE="buster"
-#WPA_ESSID=""
-#WPA_PASSWORD=""
-#WPA_COUNTRY=""
+WPA_ESSID=VM679533-2G
+WPA_PASSWORD=sjmaznfb
+WPA_COUNTRY="GB"
 ENABLE_SSH=1
 #PUBKEY_ONLY_SSH=0
 
@@ -43,7 +43,8 @@ ENABLE_SSH=1
 #NOOBS_NAME=""
 #NOOBS_DESCRIPTION=""
 
-REPOSITORY_URL="http://deb.debian.org/debian/"
-#REPOSITORY_URL="http://192.168.0.110/debian/"
+REPOSITORY_URL="file:/mnt/ssddata1/apt-mirror/mirror/deb.debian.org/debian"
+#REPOSITORY_URL="http://deb.debian.org/debian/"
+#REPOSITORY_URL="http://rpi4b-1.1stcall.uk/debian/"
 #STAGE_LIST="${BASE_DIR}/stage*"
 #EXPORT_DIRS="${BASE_DIR}/stage2 ${BASE_DIR}/stage5"

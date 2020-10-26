@@ -21,7 +21,7 @@ rm -f "${ROOTFS_DIR}/etc/apt/apt.conf.d/51cache"
 
 if [ "${USE_QEMU}" != "1" ]; then
 	if [ -e "${ROOTFS_DIR}/etc/ld.so.preload.disabled" ]; then
-		mv "${ROOTFS_DIR}/etc/ld.so.preload.disabled" "${ROOTFS_DIR}/etc/ld.so.preload"
+		mv -v "${ROOTFS_DIR}/etc/ld.so.preload.disabled" "${ROOTFS_DIR}/etc/ld.so.preload"
 	fi
 fi
 
@@ -48,7 +48,7 @@ true > "${ROOTFS_DIR}/etc/machine-id"
 
 ln -nsf /proc/mounts "${ROOTFS_DIR}/etc/mtab"
 
-find "${ROOTFS_DIR}/var/log/" -type f -exec cp /dev/null {} \;
+find "${ROOTFS_DIR}/var/log/" -type f -exec cp -v /dev/null {} \;
 
 rm -f "${ROOTFS_DIR}/root/.vnc/private.key"
 rm -f "${ROOTFS_DIR}/etc/vnc/updateid"
@@ -56,7 +56,7 @@ rm -f "${ROOTFS_DIR}/etc/vnc/updateid"
 update_issue "$(basename "${EXPORT_DIR}")"
 install -m 644 "${ROOTFS_DIR}/etc/rpi-issue" "${ROOTFS_DIR}/boot/issue.txt"
 
-cp "$ROOTFS_DIR/etc/rpi-issue" "$INFO_FILE"
+cp -v "$ROOTFS_DIR/etc/rpi-issue" "$INFO_FILE"
 
 
 {
@@ -95,7 +95,8 @@ if [ "${DEPLOY_ZIP}" == "1" ]; then
 		"$(basename "${IMG_FILE}")"
 	popd > /dev/null
 else
-	cp "$IMG_FILE" "$DEPLOY_DIR"
+	debug_log 5 "Copying '$IMG_FILE' > '$DEPLOY_DIR'"
+	cp -v "$IMG_FILE" "$DEPLOY_DIR"
 fi
-
-cp "$INFO_FILE" "$DEPLOY_DIR"
+debug_log 5 "Copying '$INFO_FILE' > '$DEPLOY_DIR'"
+cp -v "$INFO_FILE" "$DEPLOY_DIR"

@@ -6,6 +6,7 @@ export START_TIME=$( date +"[%T]" )
 run_sub_stage()
 {
 	log "Begin ${SUB_STAGE_DIR}"
+	SUB_STAGE="$(basename "${SUB_STAGE_DIR}")"
 	pushd "${SUB_STAGE_DIR}" > /dev/null
 	for i in {00..99}; do
 		if [ -f "${i}-debconf" ]; then
@@ -22,8 +23,9 @@ EOF
 			log "Begin ${SUB_STAGE_DIR}/${i}-packages-nr"
 			PACKAGES="$(sed -f "${SCRIPT_DIR}/remove-comments.sed" < "${i}-packages-nr")"
 			if [ -n "$PACKAGES" ]; then
+				debug_log 8 "Installing packages (no recommends) '$PACKAGES'"
 				on_chroot << EOF
-apt-get -o APT::Acquire::Retries=3 install --no-install-recommends -y $PACKAGES
+DEBIAN_FRONTEND=noninteractive apt-get -o APT::Acquire::Retries=3 install --no-install-recommends -y $PACKAGES
 EOF
 			fi
 			log "End ${SUB_STAGE_DIR}/${i}-packages-nr"
@@ -32,8 +34,9 @@ EOF
 			log "Begin ${SUB_STAGE_DIR}/${i}-packages"
 			PACKAGES="$(sed -f "${SCRIPT_DIR}/remove-comments.sed" < "${i}-packages")"
 			if [ -n "$PACKAGES" ]; then
+				debug_log 8 "Installing packages '$PACKAGES'"
 				on_chroot << EOF
-apt-get -o APT::Acquire::Retries=3 install -y $PACKAGES
+DEBIAN_FRONTEND=noninteractive apt-get -o APT::Acquire::Retries=3 install -y $PACKAGES
 EOF
 			fi
 			log "End ${SUB_STAGE_DIR}/${i}-packages"
@@ -79,12 +82,13 @@ EOF
 	done
 	popd > /dev/null
 	log "End ${SUB_STAGE_DIR}"
+	SUB_STAGE="(none)"
 }
 
 
 run_stage(){
-	log "Begin ${STAGE_DIR}"
 	STAGE="$(basename "${STAGE_DIR}")"
+	log "Begin ${STAGE_DIR}"
 	pushd "${STAGE_DIR}" > /dev/null
 	unmount "${WORK_DIR}/${STAGE}"
 	STAGE_WORK_DIR="${WORK_DIR}/${STAGE}"
@@ -123,6 +127,7 @@ run_stage(){
 	PREV_ROOTFS_DIR="${ROOTFS_DIR}"
 	popd > /dev/null
 	log "End ${STAGE_DIR}"
+	STAGE="(INIT)"
 }
 
 if [ "$(id -u)" != "0" ]; then
@@ -198,7 +203,9 @@ export CLEAN
 export IMG_NAME
 export APT_PROXY
 
-export STAGE="INIT"
+export STAGE="(INIT)"
+export SUB_STAGE="(n/a)"
+export SUB_STAGE_DIR
 export STAGE_DIR
 export STAGE_WORK_DIR
 export PREV_STAGE
@@ -220,6 +227,7 @@ export REPOSITORY_URL="${REPOSITORY_URL:-http://deb.debian.org/debian/}"
 export ARCH="${ARCH:-armhf}"
 export EXPORT_DIRS="${EXPORT_DIRS:-${BASE_DIR}/stage2 ${BASE_DIR}/stage5}"
 export DEBUG_LEVEL=${DEBUG_LEVEL:-5}
+export DEBUG_LOG=${DEBUG_LOG:-debug.log}
 export EXPORT_PIDS
 
 
@@ -258,7 +266,7 @@ STAGE_LIST=${STAGE_LIST:-${BASE_DIR}/stage*}
 debug_log 6 "STAGE_LIST = ${STAGE_LIST[@]}"
 debug_log 6 "EXPORT_DIRS = ${EXPORT_DIRS[@]}"
 
-for WSTAGE_DIR in "${STAGE_LIST[@]}"; do
+for WSTAGE_DIR in ${STAGE_LIST[@]}; do
 	STAGE_DIR=$(realpath "${WSTAGE_DIR}")
 	run_stage
 	if [[ " ${EXPORT_DIRS[@]} " =~ ${WSTAGE_DIR} ]]; then
@@ -273,7 +281,7 @@ for WSTAGE_DIR in "${STAGE_LIST[@]}"; do
 			OUT="$(mktemp)"
 			run_stage >"${OUT}" 2>&1 &
 			PID="${!}"
-			debug_log 3 "Spawned job ${PID} to ${OUT}"
+			debug_log 3 "Spawned job ${PID}. STDOUT & STDERR sent to ${OUT}"
 			EXPORT_PIDS+=("${PID}")
 			EXPORT_OUT+=("${OUT}")
 			if [ "${USE_QEMU}" != "1" ]; then
@@ -322,16 +330,19 @@ export EXPORTS="${#EXPORT_OUT[@]}"
 cp /dev/null mytmp.log
 for PID in "${EXPORT_PIDS[@]}"; do
 	debug_log 3 "Waiting for job. EXPORT_COUNT=${EXPORT_COUNT}/${EXPORTS} pid=${PID}"
+	tail -f ${EXPORT_OUT[${EXPORT_COUNT}]} &
+	TAIL_PID=${!}
 	wait ${PID} || true
 	debug_log 3 "Job EXPORT_COUNT=${EXPORT_COUNT} PID=${PID} exited with status ${?}. Output will follow from ${EXPORT_OUT[${EXPORT_COUNT}]} :-"
-	cat "${EXPORT_OUT[${EXPORT_COUNT}]}" >> mytmp.log
+#	cat "${EXPORT_OUT[${EXPORT_COUNT}]}" >> mytmp.log
+	kill ${TAIL_PID}
 	rm -v "${EXPORT_OUT[${EXPORT_COUNT}]}"
 	((EXPORT_COUNT+=1))
 	debug_log 3 "Next export is ${EXPORT_COUNT}"
 done
 #EXPORT_OUTPUT=$(cat mytmp.log)
 #debug_log 3 "${EXPORT_OUTPUT}"
-cat mytmp.log
+#cat mytmp.log
 
 if [ -x ${BASE_DIR}/postrun.sh ]; then
 	log "Begin postrun.sh"

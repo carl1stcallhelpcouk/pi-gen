@@ -2,19 +2,22 @@
 
 log (){
 #	date +"[%T] $*" | tee -a "${LOG_FILE}"
-	date +"[%T] ${STAGE} ${*}" | tee -a "${LOG_FILE}"
+#	date +"[%T] [${STAGE}] - ${*}" | tee -a "${LOG_FILE}"
+	date +"[%T] [${STAGE}]/[${SUB_STAGE}] - ${*}" | tee -a "${LOG_FILE}"
 }
 
 export -f log
 
 debug_log(){
-	set -e
+#	set -x
 	local LOG_LEVEL=${1:-0}
 	local MSG="${*:-debugging}"
 #	echo "LOG_LEVEL = ${LOG_LEVEL} DEBUG_LEVEL = ${DEBUG_LEVEL}"
 	if [ ${LOG_LEVEL} -le ${DEBUG_LEVEL} ]; then
-		log "*DEBUG* ${MSG}"
+#		MSG="$(date +"%x %H:%M:%S") - ${MSG}"
+		log "*DEBUG* ${MSG}" | tee -a "${WORK_DIR}/${DEBUG_LOG}"
 	fi
+#	set +x
 }
 export -f debug_log
 
@@ -45,10 +48,11 @@ bootstrap(){
 	BOOTSTRAP_ARGS+=("$@")
 	printf -v BOOTSTRAP_STR '%q ' "${BOOTSTRAP_ARGS[@]}"
 
+	debug_log 6 "Running '${BOOTSTRAP_CMD} ${BOOTSTRAP_STR}'"
 	capsh --drop=cap_setfcap -- -c "'${BOOTSTRAP_CMD}' $BOOTSTRAP_STR" || true
 
 	if [ -d "$2/debootstrap" ]; then
-		rmdir "$2/debootstrap"
+		rm -r "$2/debootstrap"
 	fi
 }
 export -f bootstrap
@@ -62,6 +66,7 @@ copy_previous(){
 #	show_progress &
 #	PROGRESS_PID=$!
 	mkdir -p "${ROOTFS_DIR}"
+	debug_log 8 "Copying ${PREV_ROOTFS_DIR}/ > ${ROOTFS_DIR}/"
 	rsync -aHAXx --exclude var/cache/apt/archives --info=progress2 "${PREV_ROOTFS_DIR}/" "${ROOTFS_DIR}/"
 #	kill ${PROGRESS_PID} >/dev/null 2>&1
 #	echo -n "...done."

@@ -22,7 +22,7 @@ ROOT_SIZE="$(( ROOT_SIZE / 1024 / 1024 + 1))"
 BOOT_NOM="256"
 ROOT_NOM="$(( ROOT_SIZE + 400 ))"
 
-mv "${NOOBS_DIR}/OS.png" "${NOOBS_DIR}/${NOOBS_NAME// /_}.png"
+mv -v "${NOOBS_DIR}/OS.png" "${NOOBS_DIR}/${NOOBS_NAME// /_}.png"
 
 sed "${NOOBS_DIR}/partitions.json" -i -e "s|BOOT_SHASUM|${BOOT_SHASUM}|"
 sed "${NOOBS_DIR}/partitions.json" -i -e "s|ROOT_SHASUM|${ROOT_SHASUM}|"
@@ -40,4 +40,5 @@ sed "${NOOBS_DIR}/os.json" -i -e "s|RELEASE|${RELEASE}|"
 
 sed "${NOOBS_DIR}/release_notes.txt" -i -e "s|UNRELEASED|${IMG_DATE}|"
 
+debug_log 8 "Copying '${NOOBS_DIR}' > '${DEPLOY_DIR}/'."
 cp -a "${NOOBS_DIR}" "${DEPLOY_DIR}/"

@@ -1,9 +1,9 @@
 #!/bin/bash -e
 
-install -m 644 files/sources.list "${ROOTFS_DIR}/etc/apt/"
-install -m 644 files/raspi.list "${ROOTFS_DIR}/etc/apt/sources.list.d/"
-install -m 644 files/headmelted_vscode.list "${ROOTFS_DIR}/etc/apt/sources.list.d/"
-install -m 644 files/nodesource.list "${ROOTFS_DIR}/etc/apt/sources.list.d/"
+install -vm 644 files/sources.list "${ROOTFS_DIR}/etc/apt/"
+install -vm 644 files/raspi.list "${ROOTFS_DIR}/etc/apt/sources.list.d/"
+#install -vm 644 files/headmelted_vscode.list "${ROOTFS_DIR}/etc/apt/sources.list.d/"
+install -vm 644 files/nodesource.list "${ROOTFS_DIR}/etc/apt/sources.list.d/"
 
 sed -i "s/RELEASE/${RELEASE}/g" "${ROOTFS_DIR}/etc/apt/sources.list"
 sed -i "s/RELEASE/${RELEASE}/g" "${ROOTFS_DIR}/etc/apt/sources.list.d/raspi.list"
@@ -23,4 +23,7 @@ on_chroot << EOF
 dpkg --add-architecture armhf
 apt-get update
 apt-get dist-upgrade -y
+EOF
+on_chroot << EOF
+echo "192.168.0.110	rpi4b-1.1stcall.uk	rpi4b-1" | tee -a /etc/hosts
 EOF
