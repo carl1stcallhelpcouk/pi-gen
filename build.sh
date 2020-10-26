@@ -281,7 +281,7 @@ for WSTAGE_DIR in ${STAGE_LIST[@]}; do
 			OUT="$(mktemp)"
 			run_stage >"${OUT}" 2>&1 &
 			PID="${!}"
-			debug_log 3 "Spawned job ${PID} to ${OUT}"
+			debug_log 3 "Spawned job ${PID}. STDOUT & STDERR sent to ${OUT}"
 			EXPORT_PIDS+=("${PID}")
 			EXPORT_OUT+=("${OUT}")
 			if [ "${USE_QEMU}" != "1" ]; then
