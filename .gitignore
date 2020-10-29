@@ -7,3 +7,6 @@ pi-gen.out
 SKIP
 stage4/03-bookshelf/files/*
 mytmp.log
+*.conf
+*.log*
+*.out

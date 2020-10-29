@@ -1,0 +1,6 @@
+# Main debian repositories
+#deb http://raspbian.raspberrypi.org/raspbian/ RELEASE main contrib non-free rpi #firmware
+deb http://rpi4b-1.1stcall.uk/raspbian/ RELEASE main contrib non-free rpi #firmware
+
+# Uncomment deb-src lines below then 'apt-get update' to enable 'apt-get source'
+#deb-src http://raspbian.raspberrypi.org/raspbian/ RELEASE main contrib non-free rpi firmware

@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-install -vm 644 files/sources.list "${ROOTFS_DIR}/etc/apt/"
+install -vm 644 files/sources.list_${ARCH} "${ROOTFS_DIR}/etc/apt/sources.list"
 install -vm 644 files/raspi.list "${ROOTFS_DIR}/etc/apt/sources.list.d/"
 #install -vm 644 files/headmelted_vscode.list "${ROOTFS_DIR}/etc/apt/sources.list.d/"
 install -vm 644 files/nodesource.list "${ROOTFS_DIR}/etc/apt/sources.list.d/"
@@ -17,13 +17,14 @@ else
 fi
 
 on_chroot apt-key add - < files/raspberrypi.gpg.key
-on_chroot apt-key add - < files/headmelted-code-oss-0CC3FD642696BFC8.pub.gpg
+#on_chroot apt-key add - < files/headmelted-code-oss-0CC3FD642696BFC8.pub.gpg
 on_chroot apt-key add - < files/nodesource.gpg.key
+debug_log 8 "Attempting to configure locales"
 on_chroot << EOF
+export LC_ALL="C"
+#export 
 dpkg --add-architecture armhf
 apt-get update
 apt-get dist-upgrade -y
 EOF
-on_chroot << EOF
-echo "192.168.0.110	rpi4b-1.1stcall.uk	rpi4b-1" | tee -a /etc/hosts
-EOF
+debug_log 9 "Configureation of locales compleated."

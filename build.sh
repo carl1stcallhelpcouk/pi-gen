@@ -41,6 +41,18 @@ EOF
 			fi
 			log "End ${SUB_STAGE_DIR}/${i}-packages"
 		fi
+		if [ -f "${i}-packages_${ARCH}" ]; then
+			log "Begin ${SUB_STAGE_DIR}/${i}-packages_${ARCH}"
+			PACKAGES="$(sed -f "${SCRIPT_DIR}/remove-comments.sed" < "${i}-packages_${ARCH}")"
+			if [ -n "$PACKAGES" ]; then
+				debug_log 8 "Installing packages '$PACKAGES'"
+				on_chroot << EOF
+DEBIAN_FRONTEND=noninteractive apt-get -o APT::Acquire::Retries=3 install -y $PACKAGES
+EOF
+			fi
+			log "End ${SUB_STAGE_DIR}/${i}-packages_${ARCH}"
+#			read -p "press [enter] to continue..."
+		fi
 		if [ -d "${i}-patches" ]; then
 			log "Begin ${SUB_STAGE_DIR}/${i}-patches"
 			pushd "${STAGE_WORK_DIR}" > /dev/null
@@ -223,8 +235,17 @@ export QUILT_NO_DIFF_INDEX=1
 export QUILT_NO_DIFF_TIMESTAMPS=1
 export QUILT_REFRESH_ARGS="-p ab"
 
-export REPOSITORY_URL="${REPOSITORY_URL:-http://deb.debian.org/debian/}"
 export ARCH="${ARCH:-armhf}"
+
+source "${SCRIPT_DIR}/error.sh" # error handling
+error "true" # show errors
+
+if [ "${ARCH}" = "arm64" ]; then
+	export REPOSITORY_URL="${REPOSITORY_URL:-http://deb.debian.org/debian/}"
+else
+	export REPOSITORY_URL="${REPOSITORY_URL:-http://raspbian.raspberrypi.org/raspbian/}"
+fi
+
 export EXPORT_DIRS="${EXPORT_DIRS:-${BASE_DIR}/stage2 ${BASE_DIR}/stage5}"
 export DEBUG_LEVEL=${DEBUG_LEVEL:-5}
 export DEBUG_LOG=${DEBUG_LOG:-debug.log}
@@ -263,6 +284,8 @@ mkdir -p "${WORK_DIR}"
 log "Begin ${BASE_DIR}"
 
 STAGE_LIST=${STAGE_LIST:-${BASE_DIR}/stage*}
+
+debug_log 6 "ARCH = ${ARCH}  -  REPOSITORY_URL = ${REPOSITORY_URL}"
 debug_log 6 "STAGE_LIST = ${STAGE_LIST[@]}"
 debug_log 6 "EXPORT_DIRS = ${EXPORT_DIRS[@]}"
 

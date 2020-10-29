@@ -17,6 +17,9 @@ debug_log(){
 #		MSG="$(date +"%x %H:%M:%S") - ${MSG}"
 		log "*DEBUG* ${MSG}" | tee -a "${WORK_DIR}/${DEBUG_LOG}"
 	fi
+	if [ ${LOG_LEVEL} -eq 9 ]; then
+		read -t 10 -n 1 -p "Press any key to continue..." || true
+	fi
 #	set +x
 }
 export -f debug_log
@@ -42,9 +45,15 @@ bootstrap(){
 	fi
 
 	BOOTSTRAP_ARGS+=(--arch "${ARCH}")
-	BOOTSTRAP_ARGS+=(--include gnupg,ca-certificates)
+	BOOTSTRAP_ARGS+=(--include gnupg,ca-certificates,locales)
 	BOOTSTRAP_ARGS+=(--components "main,contrib,non-free")
-	#BOOTSTRAP_ARGS+=(--keyring "${STAGE_DIR}/files/raspberrypi.gpg")
+
+	if [ "${ARCH}" = "armhf" ]; then
+		BOOTSTRAP_ARGS+=(--keyring "${STAGE_DIR}/files/raspberrypi.gpg")
+#	else
+#		BOOTSTRAP_ARGS+=(--keyring "${STAGE_DIR}/files/archive-key-10.asc")
+	fi
+	
 	BOOTSTRAP_ARGS+=("$@")
 	printf -v BOOTSTRAP_STR '%q ' "${BOOTSTRAP_ARGS[@]}"
 
@@ -84,6 +93,7 @@ unmount(){
 		local LOCS
 		LOCS=$(mount | grep "$DIR" | cut -f 3 -d ' ' | sort -r)
 		for loc in $LOCS; do
+			debug_log 8 "umounting $loc"
 			umount "$loc"
 		done
 	done
